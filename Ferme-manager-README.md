@@ -1,94 +1,82 @@
-ferme-manager-backend/
-├── Dockerfile
-├── docker-compose.prod.yml
-├── .do/app.yaml
-├── loki-config.yaml
-├── promtail-config.yaml
-├── alertmanager-config.yaml
-├── prometheus.yml
-├── alert.rules
-├── package.json
-├── app.js
-├── server.js
-├── config/config.js
-├── middleware/auth.js
-├── models/index.js
-├── models/user.js
-├── models/stock.js
-├── models/finance.js
-├── models/alerte.js
-├── routes/auth.js
-├── routes/stocks.js
-├── routes/finances.js
-└── routes/alertes.js
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --production
-COPY . .
-EXPOSE 3000
-CMD ["node", "server.js"]
-version: '3.8'
-services:
-  api:
-    build: .
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_HOST: ${DB_HOST}
-      JWT_SECRET: ${JWT_SECRET}
-
-  loki:
-    image: grafana/loki:3.0.0
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./loki-config.yaml:/mnt/config/loki-config.yaml
-    command: -config.file=/mnt/config/loki-config.yaml
-
-  promtail:
-    image: grafana/promtail:3.0.0
-    volumes:
-      - ./promtail-config.yaml:/mnt/config/promtail-config.yaml
-      - /var/log:/var/log
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - loki
-    command: -config.file=/mnt/config/promtail-config.yaml
-
-  alertmanager:
-    image: prom/alertmanager:v0.23.0
-    ports:
-      - "9093:9093"
-    volumes:
-      - ./alertmanager-config.yaml:/config/alertmanager.yml
-      - alertmanager-data:/data
-
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./alert.rules:/etc/prometheus/alert.rules:ro
-    depends_on:
-      - api
-      - alertmanager
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-    depends_on:
-      - loki
-
-volumes:
-  alertmanager-data:
-  grafana_data:
+index.html
+assets/
+  css/style.css
+  js/app.js
+  <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ferme Manager</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>Ferme Manager</h2>
+    <nav>
+      <ul>
+        <li><button data-section="dashboard">Dashboard</button></li>
+        <li><button data-section="stocks">Stocks</button></li>
+        <li><button data-section="elevages">Élevages</button></li>
+        <li><button data-section="employes">Employés</button></li>
+      </ul>
+    </nav>
+  </aside>
+  <main id="main-content">
+    <!-- Sections dynamiques injectées par JS -->
+  </main>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+}
+.sidebar {
+  width: 220px;
+  background: #2f3e46;
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+}
+.sidebar h2 {
+  margin-bottom: 30px;
+}
+.sidebar button {
+  display: block;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 10px 0;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.sidebar button:hover {
+  background: #354f52;
+}
+main {
+  flex: 1;
+  padding: 20px;
+}
+section {
+  display: none;
+}
+section.active {
+  display: block;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #999;
+  padding: 8px;
+  text-align: left;
+}
+button {
+  margin: 5px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
